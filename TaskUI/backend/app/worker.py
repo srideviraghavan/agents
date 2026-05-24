@@ -1,14 +1,8 @@
 ﻿import asyncio
 import os
-
 from app import crud
 from app.database import SessionLocal
 from app.task_processor_router_agent import TaskProcessorRouterAgent
-from app.agent import SimpleReactAgent
-from app.text_processor_agent import TextProcessorAgent
-from app.calculator_agent import create_calculator_agent_executor
-from langchain_openai import ChatOpenAI
-
 
 async def simulate_task(task_id: str, prompt: str, agent_type: str = "router") -> None:
     await _sleep_step(task_id, 0.4, lambda db: crud.update_task_status(db, task_id, "running"))
