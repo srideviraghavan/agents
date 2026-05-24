@@ -23,10 +23,10 @@ export async function getTask(id: string): Promise<Task> {
   return request<Task>(`/tasks/${id}`);
 }
 
-export async function createTask(prompt: string): Promise<Task> {
+export async function createTask(prompt: string, agentType: string = "router"): Promise<Task> {
   return request<Task>("/tasks", {
     method: "POST",
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, agent_type: agentType }),
   });
 }
 

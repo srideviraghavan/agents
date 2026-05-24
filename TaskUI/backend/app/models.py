@@ -21,6 +21,7 @@ class TaskRecord(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     result: Mapped[str | None] = mapped_column(Text, nullable=True)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    agent_type: Mapped[str] = mapped_column(String(20), nullable=False, default="router")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow

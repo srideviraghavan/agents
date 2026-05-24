@@ -4,7 +4,7 @@ import { TaskForm } from "./components/TaskForm";
 import { TaskHistory } from "./components/TaskHistory";
 import { TaskResult } from "./components/TaskResult";
 import { StepTimeline } from "./components/StepTimeline";
-import type { Task, TaskSummary } from "./types";
+import type { AgentType, Task, TaskSummary } from "./types";
 import "./App.css";
 
 function toSummary(task: Task): TaskSummary {
@@ -19,6 +19,7 @@ function App() {
   const [input, setInput] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [agentType, setAgentType] = useState<AgentType>("router");
 
   const loadTasks = useCallback(async () => {
     const list = await api.listTasks();
@@ -93,7 +94,7 @@ function App() {
     setLoadError(null);
 
     try {
-      const task = await api.createTask(prompt);
+      const task = await api.createTask(prompt, agentType);
       setTasks((prev) => [toSummary(task), ...prev]);
       setSelectedId(task.id);
       setSelectedTask(task);
@@ -103,7 +104,7 @@ function App() {
     } finally {
       setSubmitting(false);
     }
-  }, [input, isBusy]);
+  }, [input, isBusy, agentType]);
 
   return (
     <div className="app">
@@ -115,6 +116,21 @@ function App() {
       </header>
 
       {loadError ? <p className="app-error">{loadError}</p> : null}
+
+      <div className="agent-selector">
+        <label htmlFor="agent-type">Agent Type:</label>
+        <select
+          id="agent-type"
+          value={agentType}
+          onChange={(e) => setAgentType(e.target.value as AgentType)}
+          disabled={isBusy}
+        >
+          <option value="router">Router Agent (TaskProcessorRouterAgent)</option>
+          <option value="simple">Simple React Agent</option>
+          <option value="calculator">Calculator Agent</option>
+          <option value="text">Text Processor Agent</option>
+        </select>
+      </div>
 
       <TaskForm
         value={input}

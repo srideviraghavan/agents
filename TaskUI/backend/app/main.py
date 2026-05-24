@@ -64,10 +64,11 @@ def create_task(
     if not prompt:
         raise HTTPException(status_code=400, detail="Prompt is required")
 
-    task = crud.create_task(db, prompt)
-    background_tasks.add_task(_run_simulation, task.id, prompt)
+    agent_type = body.agent_type if hasattr(body, 'agent_type') else "router"
+    task = crud.create_task(db, prompt, agent_type)
+    background_tasks.add_task(_run_simulation, task.id, prompt, agent_type)
     return task_to_response(task)
 
 
-async def _run_simulation(task_id: str, prompt: str) -> None:
-    await simulate_task(task_id, prompt)
+async def _run_simulation(task_id: str, prompt: str, agent_type: str = "router") -> None:
+    await simulate_task(task_id, prompt, agent_type)

@@ -2,6 +2,8 @@
 
 export type StepType = "status" | "llm" | "tool" | "agent_action" | "error";
 
+export type AgentType = "router" | "simple" | "calculator" | "text";
+
 export interface TaskStep {
   id: string;
   sequence: number;
@@ -19,6 +21,7 @@ export interface TaskSummary {
   error?: string;
   createdAt: string;
   updatedAt: string;
+  agentType?: AgentType;
 }
 
 export interface Task extends TaskSummary {

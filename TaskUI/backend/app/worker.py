@@ -1,73 +1,75 @@
 ﻿import asyncio
+import os
 
 from app import crud
 from app.database import SessionLocal
+from app.task_processor_router_agent import TaskProcessorRouterAgent
+from app.agent import SimpleReactAgent
+from app.text_processor_agent import TextProcessorAgent
+from app.calculator_agent import create_calculator_agent_executor
+from langchain_openai import ChatOpenAI
 
 
-async def simulate_task(task_id: str, prompt: str) -> None:
-    should_fail = "fail" in prompt.lower()
-
+async def simulate_task(task_id: str, prompt: str, agent_type: str = "router") -> None:
     await _sleep_step(task_id, 0.4, lambda db: crud.update_task_status(db, task_id, "running"))
     await _append(task_id, 2, "status", "Processing started")
 
-    await _append(
-        task_id,
-        3,
-        "llm",
-        "Planning",
-        "Analyzing prompt and choosing approach",
-        delay=0.5,
-    )
+    try:
+        # Initialize the appropriate agent based on agent_type
+        os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY", "lmstudio")
+        model_name = os.getenv("MODEL_NAME", "zai-org/glm-4.7-flash")
+        base_url = os.getenv("BASE_URL", "http://localhost:1234/v1")
 
-    await _append(
-        task_id,
-        4,
-        "agent_action",
-        "Agent action",
-        "Thought: I should use a helper tool to answer this.",
-        delay=0.5,
-    )
-
-    await _append(
-        task_id,
-        5,
-        "tool",
-        "Running tool: word_count",
-        f'Input: "{prompt}"',
-        delay=0.5,
-    )
-
-    if should_fail:
+        agent = TaskProcessorRouterAgent(model_name=model_name, temperature=0, base_url=base_url)
         await _append(
             task_id,
-            6,
+            3,
+            "llm",
+            "Agent Initialization",
+            f"Initialized TaskProcessorRouterAgent with tools: {', '.join(agent.get_tool_names())}",
+            delay=0.3,
+        )
+        result = agent.run(prompt)  
+        
+        await _append(
+            task_id,
+            4,
+            "agent_action",
+            "Agent Execution",
+            f"Executed query with {agent_type} agent",
+            delay=0.3,
+        )
+
+        await _append(
+            task_id,
+            5,
+            "llm",
+            "Generating response",
+            "Agent completed successfully",
+            delay=0.3,
+        )
+
+        await _append(task_id, 6, "status", "Completed", delay=0.3)
+
+        def _complete(db):
+            crud.complete_task(db, task_id, result)
+
+        await _run_db(_complete)
+
+    except Exception as e:
+        await _append(
+            task_id,
+            4,
             "error",
             "Execution failed",
-            "Simulated agent error",
-            delay=0.5,
+            str(e),
+            delay=0.3,
         )
 
         def _fail(db):
-            crud.fail_task(db, task_id, 'Simulated failure (prompt contained "fail")')
+            crud.fail_task(db, task_id, str(e))
 
         await _run_db(_fail)
-        return
-
-    await _append(
-        task_id,
-        6,
-        "llm",
-        "Generating response",
-        "Drafting final answer",
-        delay=0.5,
-    )
-
-    await _append(task_id, 7, "status", "Completed", delay=0.5)
-
-    def _complete(db):
-        crud.complete_task(db, task_id, f"Processed: {prompt}")
-
-    await _run_db(_complete)
 
 
 async def _sleep_step(task_id: str, seconds: float, fn) -> None:

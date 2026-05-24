@@ -20,6 +20,44 @@
   font-size: 0.9rem;
 }
 
+.agent-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #1e2128;
+  border: 1px solid #3c4043;
+  border-radius: 8px;
+}
+
+.agent-selector label {
+  font-size: 0.9rem;
+  color: #bdc1c6;
+  font-weight: 500;
+}
+
+.agent-selector select {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid #3c4043;
+  border-radius: 6px;
+  background: #252830;
+  color: #e8eaed;
+  cursor: pointer;
+  flex: 1;
+}
+
+.agent-selector select:focus {
+  outline: 2px solid #8ab4f8;
+  outline-offset: 1px;
+}
+
+.agent-selector select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .task-form {
   display: flex;
   gap: 0.75rem;

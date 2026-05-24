@@ -24,8 +24,8 @@ def get_task(db: Session, task_id: str) -> TaskRecord | None:
     return db.scalars(stmt).first()
 
 
-def create_task(db: Session, prompt: str) -> TaskRecord:
-    task = TaskRecord(prompt=prompt.strip(), status="pending")
+def create_task(db: Session, prompt: str, agent_type: str = "router") -> TaskRecord:
+    task = TaskRecord(prompt=prompt.strip(), status="pending", agent_type=agent_type)
     db.add(task)
     db.flush()
     add_step(db, task.id, 1, "status", "Task received")
